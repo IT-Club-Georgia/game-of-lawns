@@ -1,0 +1,481 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Game Of Lawns",
+    "description": "This is a full specification for API and data compontents for \"Game of Lawns\" Game",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/gooser": {
+      "post": {
+        "summary": "Create new gooser, which is mostly stateless, since all user info will be stored in JWT",
+        "operationId": "createGooser",
+        "tags": [
+          "players"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Gooser"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Gooser created, return JWT with gooser info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "jwt": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Wrong request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game": {
+      "post": {
+        "summary": "createNewGame",
+        "operationId": "createGame",
+        "tags": [
+          "games"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-token",
+            "description": "User JWT token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Game"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Game created, return game data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Game"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Wrong request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/{id}": {
+      "get": {
+        "summary": "Return game by id if it exists or 404 if not",
+        "operationId": "getGameById",
+        "tags": [
+          "games"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-token",
+            "description": "User JWT token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Game ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Game data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Game"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "You have no access to this game",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Set second player if it's not set yet",
+        "operationId": "joinGameById",
+        "tags": [
+          "games",
+          "players"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-token",
+            "description": "User JWT token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Game ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Player successfuly set, return all game info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Game"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "You have no access to this game",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game/{id}/bite": {
+      "post": {
+        "summary": "Creates new bite at selected coordinates",
+        "operationId": "createNewBite",
+        "tags": [
+          "games"
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-token",
+            "description": "User JWT token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "description": "Game ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Bite"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Bite created, return new hunt state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Yard"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Wrong request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "You have no access to this game",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Game": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identificator for each game generated by server",
+            "readOnly": true
+          },
+          "state": {
+            "type": "string",
+            "readOnly": true,
+            "default": "idle",
+            "enum": [
+              "idle",
+              "player1",
+              "player2",
+              "cancelled",
+              "finished"
+            ]
+          },
+          "player1": {
+            "$ref": "#/components/schemas/Gooser"
+          },
+          "player2": {
+            "readOnly": true,
+            "default": null,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Gooser"
+              },
+              {
+                "type": "object",
+                "nullable": true
+              }
+            ]
+          }
+        }
+      },
+      "Gooser": {
+        "type": "object",
+        "readOnly": true,
+        "nullable": true,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true,
+            "description": "Unique identificator for each player generated by server"
+          },
+          "name": {
+            "type": "string",
+            "description": "Visible name of player"
+          },
+          "yard": {
+            "$ref": "#/components/schemas/Yard"
+          },
+          "hunt": {
+            "readOnly": true,
+            "default": null,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Yard"
+              },
+              {
+                "type": "object",
+                "nullable": true
+              }
+            ],
+            "description": "Yard of the opponent representation"
+          }
+        }
+      },
+      "Yard": {
+        "type": "array",
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": -4,
+            "maximum": 4
+          },
+          "minItems": 10,
+          "maxItems": 10,
+          "description": "Array representation of the board"
+        },
+        "minItems": 10,
+        "maxItems": 10,
+        "readOnly": true
+      },
+      "Bite": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "y": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error-no": {
+            "type": "integer",
+            "readOnly": true,
+            "example": 400
+          },
+          "error-name": {
+            "type": "string",
+            "readOnly": true,
+            "example": "Object not found"
+          }
+        }
+      }
+    }
+  }
+}
